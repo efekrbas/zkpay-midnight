@@ -29,4 +29,4 @@ npm install
 npm test
 ```
 
-*(Place screenshot of 3+ passing tests here for submission)*
+![Test Output](images/test.png)
