@@ -1,0 +1,22 @@
+{
+  "name": "zkpay",
+  "version": "1.0.0",
+  "description": "A confidential payroll and splits protocol using Midnight's privacy framework.",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "test": "mocha -r ts-node/register 'test/**/*.ts'"
+  },
+  "dependencies": {
+    "@midnight-ntwrk/compact-runtime": "^0.7.0"
+  },
+  "devDependencies": {
+    "@types/chai": "^4.3.0",
+    "@types/mocha": "^10.0.0",
+    "@types/node": "^20.0.0",
+    "chai": "^4.3.0",
+    "mocha": "^10.0.0",
+    "ts-node": "^10.9.0",
+    "typescript": "^5.0.0"
+  }
+}
