@@ -27,6 +27,14 @@ ZKPay leverages Zero-Knowledge proofs to create a hybrid state (public ledger + 
 
 ---
 
+## 📜 Smart Contract Codebase
+
+The smart contract for this project is written in the Midnight **Compact** language.
+You can find the complete contract source code in the `smart-contracts/` directory:
+- [smart-contracts/zkpay.compact](./smart-contracts/zkpay.compact)
+
+---
+
 ## 🧪 Testing & CI/CD
 
 We have built a robust Mocha + Chai testing suite that leverages the `@midnight-ntwrk/compact-runtime` to simulate the ZK environment locally. The tests guarantee that:
