@@ -59,7 +59,7 @@ function App() {
         <div style={{ fontWeight: 800, fontSize: '1.25rem', letterSpacing: '-0.04em' }}>ZKPay</div>
         <div style={{ display: 'flex', gap: '0.6rem', alignItems: 'center' }}>
           <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--accent)' }}></div>
-          <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.15em', fontWeight: 600 }}>Testnet</span>
+          <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.15em', fontWeight: 600 }}>Local Net</span>
         </div>
         <button className="premium-btn" onClick={() => setIsConnected(true)} style={{ padding: '0.5rem 1rem', fontSize: '0.85rem', gap: '0.5rem' }}>
           {isConnected ? 'Connected: 0xAli...ce' : 'Connect Lace Wallet'}

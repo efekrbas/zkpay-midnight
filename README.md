@@ -33,6 +33,10 @@ The smart contract for this project is written in the Midnight **Compact** langu
 You can find the complete contract source code in the `smart-contracts/` directory:
 - [smart-contracts/zkpay.compact](./smart-contracts/zkpay.compact)
 
+### Deployment Details
+- **Network**: Local Network (Simulator)
+- **Contract Address**: `N/A` (Running in local TypeScript simulation environment)
+
 ---
 
 ## 🧪 Testing & CI/CD
