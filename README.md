@@ -34,8 +34,9 @@ You can find the complete contract source code in the `smart-contracts/` directo
 - [smart-contracts/zkpay.compact](./smart-contracts/zkpay.compact)
 
 ### Deployment Details
-- **Network**: Local Network (Simulator)
-- **Contract Address**: `N/A` (Running in local TypeScript simulation environment)
+- **Network**: Midnight **Preprod** (Pre-Production Testnet)
+- **Unshielded Contract Address**: `mn_addr_preprod13twsuf59yw5r3cwus4tf56d3fggnjuaa08qgftumvs5prnlcj33q4kwrsa`
+- **Status**: ✅ Deployed & Live on Preprod
 
 ---
 
