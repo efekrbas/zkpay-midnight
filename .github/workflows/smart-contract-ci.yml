@@ -12,6 +12,7 @@ on:
       - 'smart-contracts/**'
       - 'test/**'
       - 'scripts/**'
+      - '.github/workflows/smart-contract-ci.yml'
   pull_request:
     branches:
       - main
@@ -23,6 +24,8 @@ on:
       - 'smart-contracts/**'
       - 'test/**'
       - 'scripts/**'
+      - '.github/workflows/smart-contract-ci.yml'
+  workflow_dispatch:
 
 jobs:
   test:
