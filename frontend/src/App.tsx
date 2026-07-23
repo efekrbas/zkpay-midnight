@@ -1,5 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './index.css';
+import { DAppConnectorAPI } from '@midnight-ntwrk/dapp-connector-api';
+// In a real build, we import the generated bindings and standard midnight interfaces:
+// import { zkpayContract } from '../../src/generated/zkpay.js';
+// import { MidnightProvider } from '@midnight-ntwrk/midnight-js-contracts';
+
+// Simulated imports for the integration implementation
+type MidnightContract = any; 
+type MidnightProvider = any;
 
 const hashCommitment = (address: string, amount: number, secret: string) => {
   return `hash(${address},${amount},${secret})`;
@@ -17,39 +25,81 @@ function App() {
   const [status, setStatus] = useState<{type: 'idle'|'success'|'error', msg: string}>({type: 'idle', msg: ''});
   const [isSimulating, setIsSimulating] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
+  const [walletApi, setWalletApi] = useState<DAppConnectorAPI | null>(null);
+  const [contract, setContract] = useState<MidnightContract | null>(null);
 
-  const handleClaim = (e: React.FormEvent) => {
+  const connectWallet = async () => {
+    try {
+      // @ts-ignore - Assuming window.midnight.lace exists when the extension is installed
+      if (typeof window !== 'undefined' && window.midnight && window.midnight.lace) {
+        // @ts-ignore
+        const api = await window.midnight.lace.enable();
+        setWalletApi(api);
+        setIsConnected(true);
+        
+        // Initialize contract instance with wallet provider
+        // const midnightProvider = await createMidnightProvider(api);
+        // const deployedContract = await initializeContract(midnightProvider, contractAddress);
+        // setContract(deployedContract);
+        
+        setStatus({ type: 'success', msg: 'Wallet connected successfully.' });
+      } else {
+        throw new Error('Midnight Lace wallet not found.');
+      }
+    } catch (err: any) {
+      setStatus({ type: 'error', msg: err.message || 'Failed to connect wallet.' });
+    }
+  };
+
+  const handleClaim = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!isConnected) {
+      setStatus({ type: 'error', msg: 'Please connect your wallet first.' });
+      return;
+    }
+
     setIsSimulating(true);
     setStatus({type: 'idle', msg: ''});
 
-    // Simulate Proof Generation Delay
-    setTimeout(() => {
-      try {
-        const claim = parseInt(claimAmount);
-        const allocated = parseInt(allocatedAmount);
+    try {
+      const claim = parseInt(claimAmount);
+      const allocated = parseInt(allocatedAmount);
 
-        if (allocated < claim) throw new Error("Claim exceeds allocated private balance");
+      if (allocated < claim) throw new Error("Claim exceeds allocated private balance");
+      
+      const comm = hashCommitment(address, allocated, secretKey);
+      if (!commitments.has(comm)) throw new Error("Invalid Commitment: Payee not found in shielded set");
+      
+      if (totalPool < claim) throw new Error("Insufficient total pool liquidity");
+      
+      // Actual Midnight Contract Execution:
+      if (contract) {
+        // 1. Prepare the witness data securely (off-chain)
+        // Set the private allocation in the local private state provider
+        // Assuming your contract bindings expose a method to set witness data
+        // For example:
+        // contract.providers.privateStateProvider.set('allocated_amount', allocated);
         
-        const comm = hashCommitment(address, allocated, secretKey);
-        if (!commitments.has(comm)) throw new Error("Invalid Commitment: Payee not found in shielded set");
-        
-        if (totalPool < claim) throw new Error("Insufficient total pool liquidity");
-        
-        setTotalPool(prev => prev - claim);
-        setStatus({
-          type: 'success', 
-          msg: `Zero-Knowledge Proof verified. ${claim} tokens claimed securely.`
-        });
-      } catch (err: any) {
-        setStatus({
-          type: 'error', 
-          msg: err.message || "Cryptographic Verification Failed"
-        });
-      } finally {
-        setIsSimulating(false);
+        // 2. Execute the circuit transaction
+        const tx = await contract.circuits.claim_payroll(address, claim, secretKey);
+        await tx.wait(); // Wait for network confirmation
+      } else {
+        throw new Error("Smart contract instance not initialized. Connect wallet properly.");
       }
-    }, 1200); 
+      
+      setTotalPool(prev => prev - claim);
+      setStatus({
+        type: 'success', 
+        msg: `Zero-Knowledge Proof verified on-chain. ${claim} tokens claimed securely.`
+      });
+    } catch (err: any) {
+      setStatus({
+        type: 'error', 
+        msg: err.message || "Cryptographic Verification Failed"
+      });
+    } finally {
+      setIsSimulating(false);
+    }
   };
 
   return (
@@ -61,7 +111,7 @@ function App() {
           <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--accent)' }}></div>
           <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.15em', fontWeight: 600 }}>Local Net</span>
         </div>
-        <button className="premium-btn" onClick={() => setIsConnected(true)} style={{ padding: '0.5rem 1rem', fontSize: '0.85rem', gap: '0.5rem' }}>
+        <button className="premium-btn" onClick={connectWallet} style={{ padding: '0.5rem 1rem', fontSize: '0.85rem', gap: '0.5rem' }}>
           {isConnected ? 'Connected: 0xAli...ce' : 'Connect Lace Wallet'}
         </button>
       </nav>
@@ -93,7 +143,7 @@ function App() {
           <div className="outer-shell animate-fade-up delay-200" style={{ transformStyle: 'preserve-3d' }}>
             <div className="inner-core">
               
-              <div className="eyebrow-tag">Witness Simulator (Local)</div>
+              <div className="eyebrow-tag">Witness & Circuit Client</div>
 
               <form onSubmit={handleClaim}>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
@@ -122,7 +172,7 @@ function App() {
 
                 <div style={{ marginTop: '2.5rem' }}>
                   <button type="submit" disabled={isSimulating} className="premium-btn">
-                    <span>{isSimulating ? 'Generating ZK Proof...' : 'Execute Claim'}</span>
+                    <span>{isSimulating ? 'Generating ZK Proof & Submitting Tx...' : 'Execute Claim'}</span>
                     
                     {/* BUTTON-IN-BUTTON NESTED ARCHITECTURE */}
                     <div className="btn-icon-wrapper">

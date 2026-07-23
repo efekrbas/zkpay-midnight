@@ -5,10 +5,12 @@
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
+    "compile:compact": "compactc --output-dir src/generated smart-contracts/zkpay.compact",
     "test": "mocha -r ts-node/register 'test/**/*.ts'"
   },
   "dependencies": {
-    "@midnight-ntwrk/compact-runtime": "^0.7.0"
+    "@midnight-ntwrk/compact-runtime": "^0.7.0",
+    "@midnight-ntwrk/midnight-js-contracts": "^4.1.1"
   },
   "devDependencies": {
     "@types/chai": "^4.3.0",
