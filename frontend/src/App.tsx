@@ -1,13 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import './index.css';
-import { DAppConnectorAPI } from '@midnight-ntwrk/dapp-connector-api';
 // In a real build, we import the generated bindings and standard midnight interfaces:
 // import { zkpayContract } from '../../src/generated/zkpay.js';
-// import { MidnightProvider } from '@midnight-ntwrk/midnight-js-contracts';
 
 // Simulated imports for the integration implementation
-type MidnightContract = any; 
-type MidnightProvider = any;
+type MidnightContract = any;
 
 const hashCommitment = (address: string, amount: number, secret: string) => {
   return `hash(${address},${amount},${secret})`;
@@ -25,8 +22,8 @@ function App() {
   const [status, setStatus] = useState<{type: 'idle'|'success'|'error', msg: string}>({type: 'idle', msg: ''});
   const [isSimulating, setIsSimulating] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
-  const [walletApi, setWalletApi] = useState<DAppConnectorAPI | null>(null);
-  const [contract, setContract] = useState<MidnightContract | null>(null);
+  const [, setWalletApi] = useState<any | null>(null);
+  const [contract] = useState<MidnightContract | null>(null);
 
   const connectWallet = async () => {
     try {
