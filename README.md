@@ -4,6 +4,7 @@ This project is built on the Midnight Network.
 
 [![Smart Contract CI](https://github.com/efekrbas/zkpay-midnight/actions/workflows/smart-contract-ci.yml/badge.svg)](https://github.com/efekrbas/zkpay-midnight/actions/workflows/smart-contract-ci.yml)
 [![Frontend CI](https://github.com/efekrbas/zkpay-midnight/actions/workflows/frontend-ci.yml/badge.svg)](https://github.com/efekrbas/zkpay-midnight/actions/workflows/frontend-ci.yml)
+
 ZKPay is a privacy-preserving dApp built on the **Midnight Network** using the Compact language. It enables organizations to manage payroll and allocate funds without exposing individual salaries or payee addresses to the public ledger.
 
 ## 🚀 Important Links
