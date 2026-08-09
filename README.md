@@ -62,4 +62,56 @@ We have built a robust Mocha + Chai testing suite that leverages the `@midnight-
 - **CI/CD**: GitHub Actions
 
 ---
+
+## 🛠️ Setup, Build & Run Instructions
+
+Follow these instructions to clone, build, test, and run ZKPay locally from source code.
+
+### 📋 Prerequisites
+- **Node.js**: `v20.x` or higher
+- **npm**: `v9.x` or higher
+
+### 1️⃣ Clone & Install Dependencies
+
+```bash
+# Clone the repository
+git clone https://github.com/efekrbas/zkpay-midnight.git
+cd zkpay-midnight
+
+# Install root dependencies for smart contracts and test suite
+npm install
+
+# Install frontend dependencies
+cd frontend
+npm install
+cd ..
+```
+
+### 2️⃣ Build & Test Smart Contracts
+
+```bash
+# Compile TypeScript contract bindings and source code
+npm run build
+
+# Run the Mocha ZK circuit & witness simulation test suite
+npm test
+```
+
+### 3️⃣ Run the Frontend DApp Locally
+
+```bash
+# Navigate to frontend
+cd frontend
+
+# Build frontend for production
+npm run build
+
+# Start local development web server
+npm run dev
+```
+
+Once `npm run dev` is executed, open `http://localhost:5173` in your browser to interact with the ZKPay web interface.
+
+---
 *Built with ❤️ for the Midnight Network Hackathon.*
+
