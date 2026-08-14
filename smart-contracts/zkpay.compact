@@ -1,10 +1,16 @@
-pragma language_version >= 0.2.0;
+pragma language_version >= 0.14.0;
 
 import CompactStandardLibrary;
 
 export struct ShieldedPayee {
     address: Bytes<32>,
     amount: Uint<64>
+}
+
+export struct CommitmentData {
+    address: Bytes<32>,
+    amount: Uint<64>,
+    secret: Bytes<32>
 }
 
 // 1. Ledger State (Public): It must store a public variable total_pool_value
@@ -14,9 +20,17 @@ export ledger total_pool_value: Cell<Uint<64>>;
 // as a cryptographic set or commitment.
 export ledger payees_commitments: Map<Bytes<32>, Boolean>;
 
-// 3. Constructor: Initialize the contract with a public pool value.
-export circuit constructor(initial_pool_value: Uint<64>) {
+// 3. Nullifiers to prevent double-spending
+export ledger nullifiers: Map<Bytes<32>, Boolean>;
+
+// Constructor equivalent: Initialize the contract with a public pool value.
+export circuit fund_pool(initial_pool_value: Uint<64>): [] {
     total_pool_value = initial_pool_value;
+}
+
+// Add a commitment to the public ledger so claim_payroll can verify it
+export circuit add_payee(commitment: Bytes<32>): [] {
+    payees_commitments.insert(commitment, true);
 }
 
 // We use a witness to retrieve the private allocated amount which must remain off-chain.
@@ -28,26 +42,29 @@ export circuit claim_payroll(
     payee_address: Bytes<32>, 
     claim_amount: Uint<64>, 
     secret_key: Bytes<32>
-) {
+): [] {
     // Retrieve the allocated amount securely from the local witness
     const allocated_amount = get_allocated_amount();
     
     // Cryptographically assert that their allocated private balance is >= claimed amount
-    assert allocated_amount >= claim_amount "Claim exceeds allocated private balance";
+    assert(allocated_amount >= claim_amount, "Claim exceeds allocated private balance");
 
     // Cryptographically assert that the payee exists in the shielded set.
-    // The commitment encompasses the ShieldedPayee details and the secret key.
-    const commitment = sha256(payee_address, allocated_amount, secret_key);
+    // The commitment encompasses the CommitmentData details and the secret key.
+    const commitment_data = CommitmentData { address: payee_address, amount: allocated_amount, secret: secret_key };
+    const commitment = persistent_hash<CommitmentData>(commitment_data);
     
     // Check if the commitment is recorded on the public ledger (our cryptographic set)
-    assert payees_commitments.member(commitment) "Payee not found in the shielded set";
+    assert(payees_commitments.member(commitment), "Payee not found in the shielded set");
 
     // Assert the pool has sufficient funds before decrementing
-    assert total_pool_value >= claim_amount "Insufficient total pool value";
+    assert(total_pool_value >= claim_amount, "Insufficient total pool value");
+
+    // Prevent double-spending by inserting a nullifier derived from the secret_key
+    const nullifier = persistent_hash<Bytes<32>>(secret_key);
+    assert(!nullifiers.member(nullifier), "Already claimed");
+    nullifiers.insert(nullifier, true);
 
     // Upon verification, it should decrement the public total_pool_value.
     total_pool_value = (total_pool_value - claim_amount) as Uint<64>;
-    
-    // Note: In a complete implementation, a nullifier would be added to the ledger 
-    // here to prevent the same payee from double-spending their claim.
 }

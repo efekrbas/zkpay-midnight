@@ -1,7 +1,7 @@
 import { fetchZkConfigProvider } from '@midnight-ntwrk/midnight-js-fetch-zk-config-provider';
 import { httpClientProofProvider } from '@midnight-ntwrk/midnight-js-http-client-proof-provider';
 import { indexerPublicDataProvider } from '@midnight-ntwrk/midnight-js-indexer-public-data-provider';
-// import { NodeWalletProvider } from '@midnight-ntwrk/midnight-js-node-wallet-provider';
+import { NodeWalletProvider } from '@midnight-ntwrk/midnight-js-node-wallet-provider';
 
 // Replace these URLs with your actual local Midnight node or testnet endpoints
 const INDEXER_URL = process.env.INDEXER_URL || 'http://localhost:8088/api/v1/graphql';
@@ -28,9 +28,8 @@ export async function getMidnightProvider() {
   const proofProvider = httpClientProofProvider(PROOF_SERVER_URL);
 
   // 4. Wallet Provider (For Node.js deployment, requires a seed or key)
-  // const seed = process.env.DEPLOYER_SEED || '0000000000000000000000000000000000000000000000000000000000000000';
-  // const walletProvider = await NodeWalletProvider.fromSeed(seed, publicDataProvider);
-  const walletProvider = {} as any; // Mocked for safety unless seed is provided
+  const seed = process.env.DEPLOYER_SEED || '0000000000000000000000000000000000000000000000000000000000000000';
+  const walletProvider = await NodeWalletProvider.fromSeed(seed, publicDataProvider);
 
   return {
     publicDataProvider,

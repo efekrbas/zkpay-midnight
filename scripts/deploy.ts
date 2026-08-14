@@ -1,6 +1,6 @@
 import { deployContract } from '@midnight-ntwrk/midnight-js-contracts';
-import { contract, ledger } from '../src/generated/zkpay.js'; // Assuming generated bindings are here
-import { getMidnightProvider } from './utils/midnightProvider.js'; 
+import { contract, ledger } from '../src/generated/zkpay.js';
+import { getMidnightProvider } from './utils/midnightProvider.js';
 
 async function main() {
   console.log('Connecting to Midnight Network provider...');
@@ -10,14 +10,18 @@ async function main() {
   
   console.log(`Deploying ZKPay smart contract with initial pool value: ${initialPoolValue}...`);
   try {
-    // deployContract requires providers, the contract circuit/ledger, and initial arguments
     const deployedContract = await deployContract(providers, {
-      privateState: {},
+      privateStateProvider: providers.privateStateProvider,
+      zkConfigProvider: providers.zkConfigProvider,
+      publicDataProvider: providers.publicDataProvider,
+      proofProvider: providers.proofProvider,
+      walletProvider: providers.walletProvider,
+      midnightProvider: providers.midnightProvider,
+    }, {
+      privateStateId: 'zkpay-deployment-state',
       contract: contract,
-      initialLedgerState: {
-        total_pool_value: initialPoolValue,
-        payees_commitments: [] // Initially empty map
-      }
+      initialPrivateState: {},
+      args: [initialPoolValue],
     });
 
     console.log('ZKPay Smart Contract Successfully Deployed!');
