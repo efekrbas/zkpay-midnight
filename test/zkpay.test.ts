@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { contract, ledger } from '../src/generated/zkpay.js';
+import { contract, ledger } from '../src/generated/zkpay';
 // In a real environment, you'd use a local compact-runtime or midnight provider here.
 // Example: import { CompactRuntime } from '@midnight-ntwrk/compact-runtime';
 // For the purpose of the quest criteria, we simulate the interaction using the real 

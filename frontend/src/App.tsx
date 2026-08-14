@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import './index.css';
 // These imports are what a real Midnight application would use.
-import { DAppConnectorWallet } from '@midnight-ntwrk/dapp-connector-api';
-import { contract as zkpayContract } from '../../src/generated/zkpay.js';
+// import { DAppConnectorWallet } from '@midnight-ntwrk/dapp-connector-api';
+import { contract as _zkpayContract } from '../../src/generated/zkpay';
 // import { createMidnightProvider, getContractInstance } from './utils/midnightClient'; // Helper that would exist in a full DApp
 
 function App() {
@@ -31,7 +31,7 @@ function App() {
       // @ts-ignore - Check for Midnight Lace Wallet extension
       if (typeof window !== 'undefined' && window.midnight && window.midnight.lace) {
         // @ts-ignore
-        const api = await window.midnight.lace.enable();
+        const _api = await window.midnight.lace.enable();
         setIsConnected(true);
         
         // This is where a real DApp connects the provider to the chain and attaches to the contract
@@ -47,14 +47,14 @@ function App() {
              total_pool_value: 10000n
            },
            circuits: {
-             claim_payroll: async (addr: string, claim: number, secret: string) => {
+             claim_payroll: async (_addr: string, _claim: number, _secret: string) => {
                // Simulate network transaction wait
                return new Promise(resolve => setTimeout(resolve, 2000));
              }
            },
            providers: {
              privateStateProvider: {
-               set: (key: string, value: any) => {}
+               set: (_key: string, _value: any) => {}
              }
            }
         });

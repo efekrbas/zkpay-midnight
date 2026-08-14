@@ -1,5 +1,5 @@
 import { deployContract } from '@midnight-ntwrk/midnight-js-contracts';
-import { contract, ledger } from '../src/generated/zkpay.js';
+import { contract, ledger } from '../src/generated/zkpay';
 import { getMidnightProvider } from './utils/midnightProvider.js';
 
 async function main() {
