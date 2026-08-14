@@ -5,7 +5,6 @@
 
 export const contract = {
   circuits: {
-    fund_pool: async (..._args: any[]) => {},
     add_payee: async (..._args: any[]) => {},
     claim_payroll: async (..._args: any[]) => {}
   }

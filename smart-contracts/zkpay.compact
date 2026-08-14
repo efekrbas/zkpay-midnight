@@ -23,14 +23,14 @@ export ledger payees_commitments: Map<Bytes<32>, Boolean>;
 // 3. Nullifiers to prevent double-spending
 export ledger nullifiers: Map<Bytes<32>, Boolean>;
 
-// Constructor equivalent: Initialize the contract with a public pool value.
-export circuit fund_pool(initial_pool_value: Uint<64>): [] {
+// Constructor: Initialize the contract with a public pool value.
+constructor(initial_pool_value: Uint<64>) {
     total_pool_value = initial_pool_value;
 }
 
 // Add a commitment to the public ledger so claim_payroll can verify it
 export circuit add_payee(commitment: Bytes<32>): [] {
-    payees_commitments.insert(commitment, true);
+    payees_commitments.insert(disclose(commitment), true);
 }
 
 // We use a witness to retrieve the private allocated amount which must remain off-chain.
@@ -55,7 +55,8 @@ export circuit claim_payroll(
     const commitment = persistent_hash<CommitmentData>(commitment_data);
     
     // Check if the commitment is recorded on the public ledger (our cryptographic set)
-    assert(payees_commitments.member(commitment), "Payee not found in the shielded set");
+    // We must disclose the commitment because it is derived from a witness
+    assert(payees_commitments.member(disclose(commitment)), "Payee not found in the shielded set");
 
     // Assert the pool has sufficient funds before decrementing
     assert(total_pool_value >= claim_amount, "Insufficient total pool value");
@@ -63,7 +64,7 @@ export circuit claim_payroll(
     // Prevent double-spending by inserting a nullifier derived from the secret_key
     const nullifier = persistent_hash<Bytes<32>>(secret_key);
     assert(!nullifiers.member(nullifier), "Already claimed");
-    nullifiers.insert(nullifier, true);
+    nullifiers.insert(disclose(nullifier), true);
 
     // Upon verification, it should decrement the public total_pool_value.
     total_pool_value = (total_pool_value - claim_amount) as Uint<64>;

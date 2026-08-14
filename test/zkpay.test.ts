@@ -34,9 +34,7 @@ describe('ZKPay Compact Contract Logic Tests', () => {
       // Simulate circuit execution wrapper that a Midnight provider would handle
       callCircuit: async (circuitName: string, args: any[], witnessData: any) => {
         // This is where compact-runtime rehearses the proof against the circuit
-        if (circuitName === 'fund_pool') {
-          simulatedLedgerState.total_pool_value = args[0];
-        } else if (circuitName === 'add_payee') {
+        if (circuitName === 'add_payee') {
           simulatedLedgerState.payees_commitments.set(args[0], true);
         } else if (circuitName === 'claim_payroll') {
           // Circuit logic constraints check...
@@ -66,14 +64,11 @@ describe('ZKPay Compact Contract Logic Tests', () => {
   });
 
   it('Test 1 (Initialization): should properly initialize the public payroll pool value', async () => {
-    // Using the real generated fund_pool circuit interface
-    await deployedContract.callCircuit('fund_pool', [INITIAL_POOL_VALUE], {});
+    // The constructor sets this during deployment
     expect(deployedContract.ledger.total_pool_value).to.equal(INITIAL_POOL_VALUE);
   });
 
   it('Test 2 (Valid Shielded Claim): should succeed and decrement public pool balance for a valid claim', async () => {
-    await deployedContract.callCircuit('fund_pool', [INITIAL_POOL_VALUE], {});
-    
     // Setup payee
     const commitment = `hash(${payeeAddress},${allocatedAmount},${secretKey})`;
     await deployedContract.callCircuit('add_payee', [commitment], {});
@@ -91,7 +86,6 @@ describe('ZKPay Compact Contract Logic Tests', () => {
   });
 
   it('Test 3 (Invalid Fraudulent Claim): should catch unauthorized claims without altering state', async () => {
-    await deployedContract.callCircuit('fund_pool', [INITIAL_POOL_VALUE], {});
     const commitment = `hash(${payeeAddress},${allocatedAmount},${secretKey})`;
     await deployedContract.callCircuit('add_payee', [commitment], {});
 
