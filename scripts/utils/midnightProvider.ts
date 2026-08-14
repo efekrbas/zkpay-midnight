@@ -11,10 +11,12 @@ export async function getMidnightProvider(): Promise<any> {
   const NODE_URL = process.env.NODE_URL || 'http://localhost:9944';
   const PROOF_SERVER_URL = process.env.PROOF_SERVER_URL || 'http://localhost:6300';
   
+  const zkConfigProvider = new NodeZkConfigProvider('managed/zkpay');
+
   return {
     publicDataProvider: indexerPublicDataProvider(INDEXER_URL, NODE_URL),
-    proofProvider: httpClientProofProvider(PROOF_SERVER_URL),
-    zkConfigProvider: new NodeZkConfigProvider('managed/zkpay'),
+    proofProvider: httpClientProofProvider(PROOF_SERVER_URL, zkConfigProvider),
+    zkConfigProvider,
     // Mocking wallet provider and private state to pass TypeScript typing for the stub
     walletProvider: {} as any,
     midnightProvider: {} as any,
