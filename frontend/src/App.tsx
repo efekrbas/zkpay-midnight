@@ -28,18 +28,14 @@ function App() {
     }
     
     try {
-      let _api;
-      
       // Check for various Midnight Lace injections
-      if (typeof window !== 'undefined' && window.midnight && window.midnight.lace) {
-        // @ts-ignore
-        _api = await window.midnight.lace.enable();
-      } else if (typeof window !== 'undefined' && window.midnight && (window.midnight as any).mnLace) {
-        // @ts-ignore
-        _api = await (window.midnight as any).mnLace.enable();
+      const win = window as any;
+      if (typeof window !== 'undefined' && win.midnight && win.midnight.lace) {
+        await win.midnight.lace.enable();
+      } else if (typeof window !== 'undefined' && win.midnight && win.midnight.mnLace) {
+        await win.midnight.mnLace.enable();
       } else {
         console.warn('Midnight Lace wallet not found in window object. Proceeding with simulated connection for testing.');
-        _api = { simulated: true };
       }
 
       setIsConnected(true);
