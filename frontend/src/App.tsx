@@ -28,42 +28,44 @@ function App() {
     }
     
     try {
-      // @ts-ignore - Check for Midnight Lace Wallet extension
+      let _api;
+      
+      // Check for various Midnight Lace injections
       if (typeof window !== 'undefined' && window.midnight && window.midnight.lace) {
         // @ts-ignore
-        const _api = await window.midnight.lace.enable();
-        setIsConnected(true);
-        
-        // This is where a real DApp connects the provider to the chain and attaches to the contract
-        // const midnightProvider = await createMidnightProvider(api);
-        // const deployedContract = await midnightProvider.getContract(contractAddress, zkpayContract);
-        // setContractInstance(deployedContract);
-        
-        // FOR DISPLAY: we assume connection succeeded and instance is available
-        setContractInstance({
-           address: contractAddress,
-           // Simulated real interaction methods for UI demonstration
-           ledger: {
-             total_pool_value: 10000n
-           },
-           circuits: {
-             claim_payroll: async (_addr: string, _claim: number, _secret: string) => {
-               // Simulate network transaction wait
-               return new Promise(resolve => setTimeout(resolve, 2000));
-             }
-           },
-           providers: {
-             privateStateProvider: {
-               set: (_key: string, _value: any) => {}
-             }
-           }
-        });
-        
-        setTotalPool(10000);
-        setStatus({ type: 'success', msg: 'Wallet connected and contract attached.' });
+        _api = await window.midnight.lace.enable();
+      } else if (typeof window !== 'undefined' && window.midnight && (window.midnight as any).mnLace) {
+        // @ts-ignore
+        _api = await (window.midnight as any).mnLace.enable();
       } else {
-        throw new Error('Midnight Lace wallet not found. Please install the extension.');
+        console.warn('Midnight Lace wallet not found in window object. Proceeding with simulated connection for testing.');
+        _api = { simulated: true };
       }
+
+      setIsConnected(true);
+      
+      // FOR DISPLAY: we assume connection succeeded and instance is available
+      setContractInstance({
+         address: contractAddress,
+         // Simulated real interaction methods for UI demonstration
+         ledger: {
+           total_pool_value: 10000n
+         },
+         circuits: {
+           claim_payroll: async (_addr: string, _claim: number, _secret: string) => {
+             // Simulate network transaction wait
+             return new Promise(resolve => setTimeout(resolve, 2000));
+           }
+         },
+         providers: {
+           privateStateProvider: {
+             set: (_key: string, _value: any) => {}
+           }
+         }
+      });
+      
+      setTotalPool(10000);
+      setStatus({ type: 'success', msg: 'Wallet connected (Simulated) and contract attached.' });
     } catch (err: any) {
       setStatus({ type: 'error', msg: err.message || 'Failed to connect wallet.' });
     }
