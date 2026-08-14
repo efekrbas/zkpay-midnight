@@ -90,6 +90,9 @@ cd ..
 ### 2️⃣ Build & Test Smart Contracts
 
 ```bash
+# Compile the Midnight Compact smart contract (requires compactc installed locally)
+npm run compile:compact
+
 # Compile TypeScript contract bindings and source code
 npm run build
 
