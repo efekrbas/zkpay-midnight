@@ -7,7 +7,9 @@ export const contract = {
   circuits: {
     add_payee: async (..._args: any[]) => {},
     claim_payroll: async (..._args: any[]) => {}
-  }
+  },
+  circuitInfos: {},
+  zkir: ""
 } as any;
 
 export const ledger = {
