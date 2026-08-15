@@ -12,6 +12,8 @@
     "resolveJsonModule": true
   },
   "include": [
+    "src/**/*",
+    "scripts/**/*",
     "smart-contracts/**/*",
     "test/**/*"
   ],

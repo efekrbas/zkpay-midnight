@@ -1,4 +1,4 @@
-pragma language_version >= 0.14.0;
+pragma language_version >= 0.20;
 
 import CompactStandardLibrary;
 
@@ -13,59 +13,77 @@ export struct CommitmentData {
     secret: Bytes<32>
 }
 
-// 1. Ledger State (Public): It must store a public variable total_pool_value
-export ledger total_pool_value: Cell<Uint<64>>;
+// 1. Ledger State (Public): Stores public total_pool_value and authorized owner address
+export ledger total_pool_value: Uint<64>;
+export ledger owner: Bytes<32>;
 
-// 2. Cell State (Shielded/Private): A shielded structure hidden on-chain 
-// as a cryptographic set or commitment.
+// 2. Shielded Commitments: A cryptographic set of authorized employee commitments
 export ledger payees_commitments: Map<Bytes<32>, Boolean>;
 
-// 3. Nullifiers to prevent double-spending
+// 3. Nullifiers to prevent replay attacks / double-claiming
 export ledger nullifiers: Map<Bytes<32>, Boolean>;
 
-// Constructor: Initialize the contract with a public pool value.
-constructor(initial_pool_value: Uint<64>) {
-    total_pool_value = initial_pool_value;
+// Private witness inputs
+witness ownerKey(): Bytes<32>;
+witness get_allocated_amount(): Uint<64>;
+
+// Helper pure circuits
+pure circuit deriveKey(sk: Bytes<32>): Bytes<32> {
+    return persistentHash<Vector<2, Bytes<32>>>([pad(32, "zkpay:owner:v1"), sk]);
 }
 
-// Add a commitment to the public ledger so claim_payroll can verify it
+pure circuit deriveNullifier(sk: Bytes<32>): Bytes<32> {
+    return persistentHash<Vector<2, Bytes<32>>>([pad(32, "zkpay:nullifier:v1"), sk]);
+}
+
+pure circuit computeCommitment(payee_address: Bytes<32>, amount: Uint<64>, secret_key: Bytes<32>): Bytes<32> {
+    const commitment_data = CommitmentData { address: payee_address, amount: amount, secret: secret_key };
+    return persistentHash<CommitmentData>(commitment_data);
+}
+
+// Constructor: Initialize contract with an initial pool value and set authenticated owner
+constructor(initial_pool_value: Uint<64>) {
+    total_pool_value = initial_pool_value;
+    owner = disclose(deriveKey(ownerKey()));
+}
+
+// Authenticated Payee Registration: ONLY the contract owner can register commitments
 export circuit add_payee(commitment: Bytes<32>): [] {
+    assert(deriveKey(ownerKey()) == owner, "Only owner can register payees");
     payees_commitments.insert(disclose(commitment), true);
 }
 
-// We use a witness to retrieve the private allocated amount which must remain off-chain.
-witness get_allocated_amount(): Uint<64>;
+// Fund Payroll: Add additional funds to the public payroll pool
+export circuit fund_payroll(amount: Uint<64>): [] {
+    assert(amount > 0, "Deposit amount must be positive");
+    total_pool_value = disclose((total_pool_value + amount) as Uint<64>);
+}
 
-// 4. Circuit / Witness Function: claim_payroll
-// Takes the payee address, the claim amount, and a secret key as parameters.
+// Claim Payroll: Authenticated employees prove entitlement and claim funds confidentially
 export circuit claim_payroll(
     payee_address: Bytes<32>, 
     claim_amount: Uint<64>, 
     secret_key: Bytes<32>
 ): [] {
-    // Retrieve the allocated amount securely from the local witness
+    // 1. Retrieve the allocated amount securely from the local witness
     const allocated_amount = get_allocated_amount();
     
-    // Cryptographically assert that their allocated private balance is >= claimed amount
+    // 2. Cryptographically assert that their allocated private balance is >= claimed amount
     assert(allocated_amount >= claim_amount, "Claim exceeds allocated private balance");
 
-    // Cryptographically assert that the payee exists in the shielded set.
-    // The commitment encompasses the CommitmentData details and the secret key.
-    const commitment_data = CommitmentData { address: payee_address, amount: allocated_amount, secret: secret_key };
-    const commitment = persistent_hash<CommitmentData>(commitment_data);
-    
-    // Check if the commitment is recorded on the public ledger (our cryptographic set)
-    // We must disclose the commitment because it is derived from a witness
-    assert(payees_commitments.member(disclose(commitment)), "Payee not found in the shielded set");
+    // 3. Recompute the commitment and cryptographically assert that the payee exists in the shielded set.
+    // The commitment encompasses the CommitmentData (address, allocated amount, secret key).
+    const commitment = computeCommitment(payee_address, allocated_amount, secret_key);
+    assert(payees_commitments.member(disclose(commitment)), "Payee commitment not found in authorized set");
 
-    // Assert the pool has sufficient funds before decrementing
+    // 4. Assert the pool has sufficient funds before decrementing
     assert(total_pool_value >= claim_amount, "Insufficient total pool value");
 
-    // Prevent double-spending by inserting a nullifier derived from the secret_key
-    const nullifier = persistent_hash<Bytes<32>>(secret_key);
+    // 5. Prevent double-spending / replay attacks by verifying and inserting a domain-separated nullifier
+    const nullifier = deriveNullifier(secret_key);
     assert(!nullifiers.member(nullifier), "Already claimed");
     nullifiers.insert(disclose(nullifier), true);
 
-    // Upon verification, it should decrement the public total_pool_value.
-    total_pool_value = (total_pool_value - claim_amount) as Uint<64>;
+    // 6. Decrement the public total_pool_value upon successful verification
+    total_pool_value = disclose((total_pool_value - claim_amount) as Uint<64>);
 }

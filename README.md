@@ -1,75 +1,126 @@
 # ZKPay: Confidential Payroll & Splits Protocol
 
-This project is built on the Midnight Network.
-
-[![Smart Contract CI](https://github.com/efekrbas/zkpay-midnight/actions/workflows/smart-contract-ci.yml/badge.svg)](https://github.com/efekrbas/zkpay-midnight/actions/workflows/smart-contract-ci.yml)
-[![Frontend CI](https://github.com/efekrbas/zkpay-midnight/actions/workflows/frontend-ci.yml/badge.svg)](https://github.com/efekrbas/zkpay-midnight/actions/workflows/frontend-ci.yml)
-
-ZKPay is a privacy-preserving dApp built on the **Midnight Network** using the Compact language. It enables organizations to manage payroll and allocate funds without exposing individual salaries or payee addresses to the public ledger.
-
-## 🚀 Important Links
-
-- **Live Demo**: [Click here to test the ZKPay Simulator](https://zkpay-midnight.vercel.app/) *(Note: Make sure to update this Vercel link if your URL is different)*
-- **Demo Video**: [Watch the 1-Minute Walkthrough on YouTube](https://www.youtube.com/watch?v=WCHGt9IxDGE)
-- **Product Proposal**: Confidential Payroll and Splits Protocol
+ZKPay is a privacy-preserving decentralized application built on the **Midnight Network** using the **Compact** smart contract language and **Midnight.js** TypeScript SDK. It enables organizations to manage payroll, fund liquidity, and disburse salaries without exposing employee identities, individual salary allocations, or payee addresses to the public ledger.
 
 ---
 
-## 🛡️ Privacy Model
+## 🛡️ Privacy & Cryptographic Model
 
-ZKPay leverages Zero-Knowledge proofs to create a hybrid state (public ledger + private cell state) that perfectly balances transparency for the organization with strict privacy for the employees.
+ZKPay utilizes Zero-Knowledge proofs and Midnight's dual-state model (public ledger + private witness state) to balance organizational transparency with cryptographic employee privacy.
 
-### What an observer CAN learn (Public State):
-- **Total Pool Liquidity (`total_pool_value`)**: Observers can verifiably see the total amount of tokens allocated to the smart contract.
-- **Transaction Validity**: Observers can see that a mathematical proof was submitted and validated, and that the total pool decreased by the claimed amount.
+### What is Public on the Ledger (`export ledger`):
+- **Total Pool Liquidity (`total_pool_value`)**: Observers can verifiably inspect the total liquidity funded into the contract.
+- **Contract Owner Public Key (`owner`)**: Derived from the deployer's secret key via `deriveKey(ownerKey())`.
+- **Authorized Commitments (`payees_commitments`)**: Cryptographic commitments of registered payees. Observers see only 32-byte hashes, not the constituent addresses, amounts, or secrets.
+- **Spent Nullifiers (`nullifiers`)**: Domain-separated nullifier hashes recorded upon claim to prevent replay attacks and double-spending.
+- **ZK Proof Verification**: Observers and network validators verify that each claim satisfies all circuit constraints.
 
-### What an observer CANNOT learn (Private Witness State):
-- **Payee Identity**: The 32-byte address of the person claiming the funds remains completely hidden.
-- **Allocated Salary**: Observers cannot see how much a specific individual was allocated.
-- **Cryptographic Commitments**: The `ShieldedPayee` struct acts as a commitment. Hackers cannot brute-force or scrape the ledger to find out who is registered in the shielded set, as it requires the exact `Address`, `Amount`, and `Secret Key` (entropy) to generate a valid ZK circuit proof.
-
----
-
-## 📜 Smart Contract Codebase
-
-The smart contract for this project is written in the Midnight **Compact** language.
-You can find the complete contract source code in the `smart-contracts/` directory:
-- [smart-contracts/zkpay.compact](./smart-contracts/zkpay.compact)
-
-### Deployment Details
-- **Network**: Midnight **Preprod** (Pre-Production Testnet)
-- **Unshielded Contract Address**: `mn_addr_preprod13twsuf59yw5r3cwus4tf56d3fggnjuaa08qgftumvs5prnlcj33q4kwrsa`
-- **Status**: ✅ Deployed & Live on Preprod
+### What Remains Strictly Private (`witness`):
+- **Payee Identity**: The claimant's address is verified inside the zero-knowledge circuit and never disclosed publicly.
+- **Allocated Salary**: The employee's exact private allocation is provided off-chain via the local witness (`get_allocated_amount()`).
+- **Secret Entropy Key**: A private secret shared between employer and employee to construct the commitment preimage.
+- **Commitment Pre-image**: Observers cannot brute-force or reverse commitments without knowing the 3-tuple `(address, allocated_amount, secret_key)`.
 
 ---
 
-## 🧪 Testing & CI/CD
+## 🔒 Secure Authorization Architecture
 
-We have built a robust Mocha + Chai testing suite that leverages the `@midnight-ntwrk/compact-runtime` to simulate the ZK environment locally. The tests guarantee that:
-1. The contract initializes properly.
-2. Valid ZK claims correctly decrement the public pool.
-3. Fraudulent claims (wrong secret keys or excessive amounts) fail silently without exposing data or altering the public state.
+To eliminate unauthorized fund drainage and ensure strict integrity:
 
-### Test Output Screenshot
-*(Passing all hackathon criteria)*
+1. **Owner-Gated Payee Registration (`add_payee`)**:
+   - Only the contract owner who holds the deployer's `ownerKey` can register new payee commitments into `payees_commitments`.
+   - Enforced cryptographically by: `assert(deriveKey(ownerKey()) == owner, "Only owner can register payees");`
+2. **Entitlement & Allocation Bounds Check (`claim_payroll`)**:
+   - The circuit fetches `allocated_amount` from the local witness and asserts `allocated_amount >= claim_amount`.
+   - The circuit computes `computeCommitment(payee_address, allocated_amount, secret_key)` and asserts membership in `payees_commitments`.
+3. **Double-Spending Prevention (Nullifier System)**:
+   - A unique nullifier is derived using domain separation: `deriveNullifier(secret_key)`.
+   - The circuit asserts `!nullifiers.member(nullifier)` before inserting the nullifier into ledger state.
+4. **Liquidity Balance Decrement**:
+   - The circuit verifies `total_pool_value >= claim_amount` and decrements the pool upon proof verification.
 
-![Test Output](images/test.png)
+---
 
-## 💻 Tech Stack
-- **Smart Contracts**: Midnight Compact Language (v0.2.0)
-- **Testing**: TypeScript, Mocha, Chai, ts-node
-- **Frontend**: React, Vite, Tailwind CSS, GSAP (Glassmorphism UI)
-- **CI/CD**: GitHub Actions
+## 📜 Smart Contract Architecture
+
+The core logic is implemented in Compact at `smart-contracts/zkpay.compact`:
+
+```compact
+pragma language_version >= 0.20;
+
+import CompactStandardLibrary;
+
+export struct CommitmentData {
+    address: Bytes<32>,
+    amount: Uint<64>,
+    secret: Bytes<32>
+}
+
+export ledger total_pool_value: Uint<64>;
+export ledger owner: Bytes<32>;
+export ledger payees_commitments: Map<Bytes<32>, Boolean>;
+export ledger nullifiers: Map<Bytes<32>, Boolean>;
+
+witness ownerKey(): Bytes<32>;
+witness get_allocated_amount(): Uint<64>;
+
+pure circuit deriveKey(sk: Bytes<32>): Bytes<32> {
+    return persistentHash<Vector<2, Bytes<32>>>([pad(32, "zkpay:owner:v1"), sk]);
+}
+
+pure circuit deriveNullifier(sk: Bytes<32>): Bytes<32> {
+    return persistentHash<Vector<2, Bytes<32>>>([pad(32, "zkpay:nullifier:v1"), sk]);
+}
+
+pure circuit computeCommitment(payee_address: Bytes<32>, amount: Uint<64>, secret_key: Bytes<32>): Bytes<32> {
+    const commitment_data = CommitmentData { address: payee_address, amount: amount, secret: secret_key };
+    return persistentHash<CommitmentData>(commitment_data);
+}
+
+constructor(initial_pool_value: Uint<64>) {
+    total_pool_value = initial_pool_value;
+    owner = disclose(deriveKey(ownerKey()));
+}
+
+export circuit add_payee(commitment: Bytes<32>): [] {
+    assert(deriveKey(ownerKey()) == owner, "Only owner can register payees");
+    payees_commitments.insert(disclose(commitment), true);
+}
+
+export circuit fund_payroll(amount: Uint<64>): [] {
+    assert(amount > 0, "Deposit amount must be positive");
+    total_pool_value = disclose((total_pool_value + amount) as Uint<64>);
+}
+
+export circuit claim_payroll(
+    payee_address: Bytes<32>, 
+    claim_amount: Uint<64>, 
+    secret_key: Bytes<32>
+): [] {
+    const allocated_amount = get_allocated_amount();
+    assert(allocated_amount >= claim_amount, "Claim exceeds allocated private balance");
+
+    const commitment = computeCommitment(payee_address, allocated_amount, secret_key);
+    assert(payees_commitments.member(disclose(commitment)), "Payee commitment not found in authorized set");
+
+    assert(total_pool_value >= claim_amount, "Insufficient total pool value");
+
+    const nullifier = deriveNullifier(secret_key);
+    assert(!nullifiers.member(nullifier), "Already claimed");
+    nullifiers.insert(disclose(nullifier), true);
+
+    total_pool_value = disclose((total_pool_value - claim_amount) as Uint<64>);
+}
+```
 
 ---
 
 ## 🛠️ Setup, Build & Run Instructions
 
-Follow these instructions to clone, build, test, and run ZKPay locally from source code.
-
-### 📋 Prerequisites
+### Prerequisites
 - **Node.js**: `v20.x` or higher
 - **npm**: `v9.x` or higher
+- **Compact Compiler** (optional for local contract compilation): `compact` / `compactc`
 
 ### 1️⃣ Clone & Install Dependencies
 
@@ -78,7 +129,7 @@ Follow these instructions to clone, build, test, and run ZKPay locally from sour
 git clone https://github.com/efekrbas/zkpay-midnight.git
 cd zkpay-midnight
 
-# Install root dependencies for smart contracts and test suite
+# Install root dependencies
 npm install
 
 # Install frontend dependencies
@@ -87,34 +138,77 @@ npm install
 cd ..
 ```
 
-### 2️⃣ Build & Test Smart Contracts
+### 2️⃣ Build and Test Smart Contracts
 
 ```bash
-# Compile the Midnight Compact smart contract (requires compactc installed locally)
-npm run compile:compact
-
-# Compile TypeScript contract bindings and source code
+# Build TypeScript contract and provider bindings
 npm run build
 
-# Run the Mocha ZK circuit & witness simulation test suite
+# Run comprehensive circuit logic and privacy tests
 npm test
 ```
 
-### 3️⃣ Run the Frontend DApp Locally
+### 3️⃣ Test Suite Coverage
+
+The Mocha + Chai test suite in `test/zkpay.test.ts` executes and validates all circuit and privacy requirements:
+1. **Contract Initialization**: Verifies initial public liquidity and owner public key derivation.
+2. **Owner Authorization**: Confirms owner can register valid commitments; verifies unauthorized registration attempts are strictly rejected.
+3. **Liquidity Funding**: Validates depositing funds and rejecting non-positive amounts.
+4. **Confidential Claims**: Tests witness salary retrieval, commitment membership validation, nullifier recording, and public pool balance decrement.
+5. **Replay Protection**: Confirms duplicate claims with the same secret key fail on the nullifier check.
+6. **Over-Claim Protection**: Confirms claims exceeding private allocation fail inside the ZK witness assertion.
+7. **Fraudulent Preimage Rejection**: Confirms claims with unauthorized secrets or unlisted commitments fail.
+
+### 4️⃣ Run the Frontend Web Application
 
 ```bash
-# Navigate to frontend
 cd frontend
 
-# Build frontend for production
+# Lint and build for production
+npm run lint
 npm run build
 
-# Start local development web server
+# Start local development server
 npm run dev
 ```
 
-Once `npm run dev` is executed, open `http://localhost:5173` in your browser to interact with the ZKPay web interface.
+Open `http://localhost:5173` in your browser to interact with the ZKPay DApp. The interface supports:
+- **1AM / Midnight Lace Wallet Connection** with live network status detection.
+- **Employer Portal**: One-click contract deployment, payee commitment registration, real-time commitment calculation, and pool funding.
+- **Employee Portal**: Confidential salary claims, witness evaluation, nullifier tracking, and ZK proof generation.
+- **Privacy Explorer**: Interactive breakdown of public ledger data vs zero-knowledge private witness data.
 
 ---
-*Built with ❤️ for the Midnight Network Hackathon.*
 
+## 📁 Repository Structure
+
+```
+zkpay-midnight/
+├── smart-contracts/
+│   └── zkpay.compact          # Midnight Compact Smart Contract
+├── src/
+│   ├── index.ts               # Barrel exports
+│   ├── crypto.ts              # Domain-separated persistentHash and nullifiers
+│   ├── witnesses.ts           # WitnessContext and private state handlers
+│   └── generated/
+│       └── zkpay.ts           # Contract interfaces and circuit simulator
+├── scripts/
+│   ├── deploy.ts              # Midnight SDK contract deployment script
+│   └── utils/
+│       └── midnightProvider.ts# Real Midnight SDK provider and wallet builder
+├── test/
+│   └── zkpay.test.ts          # Comprehensive Mocha + Chai ZK test suite
+├── frontend/
+│   ├── src/
+│   │   ├── lib/
+│   │   │   ├── midnight.ts    # DApp connector, session, and crypto helpers
+│   │   │   └── zkpay.ts       # Contract deployment and circuit caller helpers
+│   │   ├── App.tsx            # Dual-portal Employer/Employee React UI
+│   │   └── index.css          # Glassmorphic dark styling
+│   └── package.json
+└── package.json
+```
+
+---
+
+*Built with ❤️ for the Midnight Network Ecosystem.*
