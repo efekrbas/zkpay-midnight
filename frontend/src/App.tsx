@@ -308,60 +308,61 @@ export function App() {
   return (
     <>
       {/* Floating Island Glass Navbar */}
-      <nav className="glass-nav animate-fade-up">
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
-          <div
-            style={{
-              width: '28px',
-              height: '28px',
-              borderRadius: '8px',
-              background: 'linear-gradient(135deg, #00f2fe, #4facfe)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontWeight: 900,
-              color: 'black',
-              fontSize: '0.9rem',
-            }}
-          >
-            Z
+      <div className="header-container">
+        <nav className="glass-nav animate-fade-up">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
+            <div
+              style={{
+                width: '28px',
+                height: '28px',
+                borderRadius: '8px',
+                background: 'linear-gradient(135deg, var(--accent), var(--accent-cyan))',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontWeight: 900,
+                color: 'black',
+                fontSize: '0.9rem',
+              }}
+            >
+              Z
+            </div>
+            <span style={{ fontWeight: 800, fontSize: '1.25rem', letterSpacing: '-0.03em' }}>ZKPay</span>
           </div>
-          <span style={{ fontWeight: 800, fontSize: '1.25rem', letterSpacing: '-0.03em' }}>ZKPay</span>
-        </div>
 
-        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-          <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: session ? '#2ed573' : '#ffa502' }} />
-          <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.15em', fontWeight: 700 }}>
-            {session ? 'Midnight Preprod' : 'Offline'}
-          </span>
-        </div>
+          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: session ? 'var(--accent-cyan)' : '#ffa502' }} />
+            <span style={{ fontSize: '0.75rem', color: 'var(--text-medium)', textTransform: 'uppercase', letterSpacing: '0.15em', fontWeight: 700 }}>
+              {session ? 'Midnight Preprod' : 'Offline'}
+            </span>
+          </div>
 
-        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-          <input
-            type="text"
-            placeholder="Contract Address"
-            className="input-premium"
-            style={{ padding: '0.45rem 1rem', width: '220px', fontSize: '0.8rem' }}
-            value={contractAddress}
-            onChange={(e) => setContractAddress(e.target.value)}
-          />
-          <button
-            className="premium-btn"
-            onClick={handleConnectWallet}
-            disabled={isConnecting}
-            style={{ padding: '0.45rem 1.2rem', fontSize: '0.85rem' }}
-          >
-            {walletAddress ? `${walletAddress.slice(0, 8)}...${walletAddress.slice(-4)}` : 'Connect Wallet'}
-          </button>
-        </div>
-      </nav>
+          <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+            <input
+              type="text"
+              placeholder="Contract Address"
+              className="input-premium"
+              style={{ padding: '0.45rem 1rem', width: '220px', fontSize: '0.8rem' }}
+              value={contractAddress}
+              onChange={(e) => setContractAddress(e.target.value)}
+            />
+            <button
+              className="premium-btn"
+              onClick={handleConnectWallet}
+              disabled={isConnecting}
+              style={{ padding: '0.45rem 1.2rem', fontSize: '0.85rem' }}
+            >
+              {walletAddress ? `${walletAddress.slice(0, 8)}...${walletAddress.slice(-4)}` : 'Connect Wallet'}
+            </button>
+          </div>
+        </nav>
+      </div>
 
       {/* Main Container */}
       <main className="macro-pad">
         <div className="bento-grid">
           {/* Left Column: Pool Balance & Contract Status */}
-          <div className="outer-shell animate-fade-up delay-100">
-            <div className="inner-core" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+          <div className="glass-panel animate-fade-up delay-100" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
               <div>
                 <div className="eyebrow-tag">Public Ledger State</div>
                 <h2 style={{ fontSize: '2.4rem', marginBottom: '0.5rem', lineHeight: 1.1 }}>Payroll Liquidity</h2>
@@ -370,32 +371,32 @@ export function App() {
                     fontSize: '4.8rem',
                     fontWeight: 800,
                     color: 'var(--accent)',
-                    textShadow: '0 0 35px rgba(0, 242, 254, 0.25)',
+                    textShadow: '0 0 35px rgba(187, 134, 252, 0.25)',
                     marginBottom: '1.5rem',
                     letterSpacing: '-0.05em',
                     lineHeight: 1,
                   }}
                 >
                   {totalPool.toLocaleString()}
-                  <span style={{ fontSize: '1.5rem', color: 'var(--text-secondary)', marginLeft: '0.5rem' }}>tNIGHT</span>
+                  <span style={{ fontSize: '1.5rem', color: 'var(--text-medium)', marginLeft: '0.5rem' }}>tNIGHT</span>
                 </div>
 
-                <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', lineHeight: 1.6, marginBottom: '2rem' }}>
+                <p style={{ color: 'var(--text-medium)', fontSize: '0.95rem', lineHeight: 1.6, marginBottom: '2rem' }}>
                   The public accumulator tracks total contract liquidity. Observers verify mathematical validity and balance decrements
                   without learning payee identities, salary amounts, or claimant addresses.
                 </p>
               </div>
 
               <div>
-                <div style={{ height: '1px', background: 'var(--border-shell)', margin: '1.5rem 0' }} />
+                <div style={{ height: '1px', background: 'var(--glass-border)', margin: '1.5rem 0' }} />
 
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem' }}>
-                  <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Shielded Commitments:</span>
-                  <span style={{ fontWeight: 700, color: 'white' }}>{commitmentsList.length} registered</span>
+                  <span style={{ fontSize: '0.85rem', color: 'var(--text-medium)' }}>Shielded Commitments:</span>
+                  <span style={{ fontWeight: 700, color: 'var(--text-high)' }}>{commitmentsList.length} registered</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.5rem' }}>
-                  <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Spent Nullifiers:</span>
-                  <span style={{ fontWeight: 700, color: 'white' }}>{nullifiersList.length} claimed</span>
+                  <span style={{ fontSize: '0.85rem', color: 'var(--text-medium)' }}>Spent Nullifiers:</span>
+                  <span style={{ fontWeight: 700, color: 'var(--text-high)' }}>{nullifiersList.length} claimed</span>
                 </div>
 
                 {!contractAddress && (
@@ -409,64 +410,32 @@ export function App() {
                   </button>
                 )}
               </div>
-            </div>
           </div>
 
           {/* Right Column: Dynamic Action Portal */}
-          <div className="outer-shell animate-fade-up delay-200">
-            <div className="inner-core">
+          <div className="glass-panel animate-fade-up delay-200">
               {/* Tab Selector */}
-              <div style={{ display: 'flex', gap: '1rem', marginBottom: '2rem', borderBottom: '1px solid var(--border-shell)', paddingBottom: '1rem' }}>
+              <div className="tab-container">
                 <button
                   type="button"
+                  className={`tab-btn ${activeTab === 'employee' ? 'active' : ''}`}
                   onClick={() => setActiveTab('employee')}
-                  style={{
-                    background: activeTab === 'employee' ? 'rgba(0, 242, 254, 0.1)' : 'transparent',
-                    color: activeTab === 'employee' ? 'var(--accent)' : 'var(--text-secondary)',
-                    border: 'none',
-                    padding: '0.5rem 1rem',
-                    borderRadius: '8px',
-                    fontWeight: 700,
-                    cursor: 'pointer',
-                    fontSize: '0.9rem',
-                    transition: 'all 0.3s',
-                  }}
                 >
-                  💼 Employee Portal (Claim)
+                  💼 Employee Claim
                 </button>
                 <button
                   type="button"
+                  className={`tab-btn ${activeTab === 'employer' ? 'active' : ''}`}
                   onClick={() => setActiveTab('employer')}
-                  style={{
-                    background: activeTab === 'employer' ? 'rgba(0, 242, 254, 0.1)' : 'transparent',
-                    color: activeTab === 'employer' ? 'var(--accent)' : 'var(--text-secondary)',
-                    border: 'none',
-                    padding: '0.5rem 1rem',
-                    borderRadius: '8px',
-                    fontWeight: 700,
-                    cursor: 'pointer',
-                    fontSize: '0.9rem',
-                    transition: 'all 0.3s',
-                  }}
                 >
-                  🏢 Employer Portal (Register & Fund)
+                  🏢 Employer Tools
                 </button>
                 <button
                   type="button"
+                  className={`tab-btn ${activeTab === 'privacy' ? 'active' : ''}`}
                   onClick={() => setActiveTab('privacy')}
-                  style={{
-                    background: activeTab === 'privacy' ? 'rgba(0, 242, 254, 0.1)' : 'transparent',
-                    color: activeTab === 'privacy' ? 'var(--accent)' : 'var(--text-secondary)',
-                    border: 'none',
-                    padding: '0.5rem 1rem',
-                    borderRadius: '8px',
-                    fontWeight: 700,
-                    cursor: 'pointer',
-                    fontSize: '0.9rem',
-                    transition: 'all 0.3s',
-                  }}
                 >
-                  🛡️ Privacy Architecture
+                  🛡️ Privacy Arc
                 </button>
               </div>
 
@@ -510,15 +479,15 @@ export function App() {
                     />
                   </div>
 
-                  <div style={{ height: '1px', background: 'var(--border-shell)', margin: '1.5rem 0' }} />
+                  <div style={{ height: '1px', background: 'var(--glass-border)', margin: '1.5rem 0' }} />
 
                   <div className="form-group">
-                    <label className="form-label" style={{ color: 'white' }}>Amount to Claim</label>
+                    <label className="form-label" style={{ color: 'var(--text-high)' }}>Amount to Claim</label>
                     <input
                       className="input-premium"
                       style={{
-                        background: 'rgba(0, 242, 254, 0.05)',
-                        borderColor: 'rgba(0, 242, 254, 0.3)',
+                        background: 'rgba(187, 134, 252, 0.05)',
+                        borderColor: 'rgba(187, 134, 252, 0.3)',
                         fontSize: '1.4rem',
                         fontWeight: 700,
                       }}
@@ -530,7 +499,7 @@ export function App() {
                   </div>
 
                   <div style={{ marginTop: '2rem' }}>
-                    <button type="submit" disabled={isProcessing} className="premium-btn" style={{ width: '100%', justifyContent: 'center' }}>
+                    <button type="submit" disabled={isProcessing} className="premium-btn accent" style={{ width: '100%', justifyContent: 'center' }}>
                       <span>{isProcessing ? processingStep || 'Generating ZK Proof...' : 'Execute Zero-Knowledge Claim'}</span>
                     </button>
                   </div>
@@ -608,14 +577,14 @@ export function App() {
                     {previewCommitment && (
                       <div
                         style={{
-                          background: 'rgba(255, 255, 255, 0.02)',
-                          border: '1px dashed var(--border-shell)',
+                          background: 'var(--glass-bg)',
+                          border: '1px dashed var(--glass-border)',
                           borderRadius: '12px',
                           padding: '0.8rem 1rem',
                           marginBottom: '1.5rem',
                         }}
                       >
-                        <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: '0.3rem' }}>
+                        <div style={{ fontSize: '0.7rem', color: 'var(--text-medium)', textTransform: 'uppercase', marginBottom: '0.3rem' }}>
                           Cryptographic Commitment Preview
                         </div>
                         <div style={{ fontSize: '0.8rem', fontFamily: 'monospace', color: 'var(--accent)', wordBreak: 'break-all' }}>
@@ -624,12 +593,12 @@ export function App() {
                       </div>
                     )}
 
-                    <button type="submit" disabled={isProcessing} className="premium-btn" style={{ width: '100%', justifyContent: 'center' }}>
+                    <button type="submit" disabled={isProcessing} className="premium-btn accent" style={{ width: '100%', justifyContent: 'center' }}>
                       <span>{isProcessing ? processingStep || 'Registering...' : 'Register Shielded Payee'}</span>
                     </button>
                   </form>
 
-                  <div style={{ height: '1px', background: 'var(--border-shell)', margin: '2rem 0' }} />
+                  <div style={{ height: '1px', background: 'var(--glass-border)', margin: '2rem 0' }} />
 
                   {/* Fund Pool Section */}
                   <form onSubmit={handleFundPayroll}>
@@ -658,16 +627,9 @@ export function App() {
                   <h3 style={{ fontSize: '1.4rem', marginBottom: '1rem' }}>Protocol Security & Privacy Model</h3>
 
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
-                    <div
-                      style={{
-                        background: 'rgba(46, 213, 115, 0.05)',
-                        border: '1px solid rgba(46, 213, 115, 0.2)',
-                        padding: '1.2rem',
-                        borderRadius: '1rem',
-                      }}
-                    >
-                      <h4 style={{ color: '#2ed573', fontSize: '0.95rem', marginBottom: '0.5rem' }}>🔒 Private (Witness Data)</h4>
-                      <ul style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.6, paddingLeft: '1.2rem' }}>
+                    <div className="info-card" style={{ borderColor: 'rgba(3, 218, 198, 0.3)', background: 'rgba(3, 218, 198, 0.05)' }}>
+                      <h4 style={{ color: 'var(--accent-cyan)', fontSize: '0.95rem', marginBottom: '0.5rem' }}>🔒 Private (Witness Data)</h4>
+                      <ul style={{ fontSize: '0.85rem', color: 'var(--text-medium)', lineHeight: 1.6, paddingLeft: '1.2rem' }}>
                         <li>Payee identity & recipient address</li>
                         <li>Total allocated salary amount</li>
                         <li>Secret entropy key</li>
@@ -675,16 +637,9 @@ export function App() {
                       </ul>
                     </div>
 
-                    <div
-                      style={{
-                        background: 'rgba(0, 242, 254, 0.05)',
-                        border: '1px solid rgba(0, 242, 254, 0.2)',
-                        padding: '1.2rem',
-                        borderRadius: '1rem',
-                      }}
-                    >
+                    <div className="info-card" style={{ borderColor: 'rgba(187, 134, 252, 0.3)', background: 'rgba(187, 134, 252, 0.05)' }}>
                       <h4 style={{ color: 'var(--accent)', fontSize: '0.95rem', marginBottom: '0.5rem' }}>🌐 Public (On-Chain Ledger)</h4>
-                      <ul style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.6, paddingLeft: '1.2rem' }}>
+                      <ul style={{ fontSize: '0.85rem', color: 'var(--text-medium)', lineHeight: 1.6, paddingLeft: '1.2rem' }}>
                         <li>Total payroll pool liquidity</li>
                         <li>Registered commitments set</li>
                         <li>Spent nullifier map</li>
@@ -694,7 +649,7 @@ export function App() {
                   </div>
 
                   <h4 style={{ fontSize: '1rem', marginBottom: '0.8rem' }}>Authorization Guarantee</h4>
-                  <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
+                  <p style={{ fontSize: '0.85rem', color: 'var(--text-medium)', lineHeight: 1.6 }}>
                     Only the authenticated contract owner (derived via <code>deriveKey(ownerKey())</code>) can register commitments in{' '}
                     <code>payees_commitments</code>. Claimants prove knowledge of the preimage without revealing it. Replay attacks are
                     strictly prevented by recording domain-separated nullifiers.
@@ -713,7 +668,6 @@ export function App() {
                   )}
                 </div>
               )}
-            </div>
           </div>
         </div>
       </main>

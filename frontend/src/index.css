@@ -1,14 +1,24 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
 
 :root {
-  --bg-deep: #050505;
-  --bg-shell: rgba(255, 255, 255, 0.03);
-  --bg-core: rgba(10, 10, 10, 0.6);
-  --border-shell: rgba(255, 255, 255, 0.06);
-  --border-core: rgba(255, 255, 255, 0.08);
-  --accent: #00f2fe;
-  --text-primary: #ffffff;
-  --text-secondary: #888899;
+  /* Dark Mode Standards */
+  --bg-base: #121212;
+  --bg-elevated: #1E1E1E;
+  
+  /* Text Contrast */
+  --text-high: rgba(255, 255, 255, 0.87);
+  --text-medium: rgba(255, 255, 255, 0.60);
+  --text-disabled: rgba(255, 255, 255, 0.38);
+
+  /* Glass & Borders */
+  --glass-bg: rgba(255, 255, 255, 0.05);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-border-light: rgba(255, 255, 255, 0.2);
+
+  /* Accents (Desaturated for dark mode) */
+  --accent: #BB86FC;
+  --accent-cyan: #03DAC6; /* Secondary */
+  --on-accent: #000000;
   
   --fluid-bezier: cubic-bezier(0.32, 0.72, 0, 1);
   --fluid-duration: 700ms;
@@ -22,27 +32,45 @@
 
 body {
   font-family: 'Plus Jakarta Sans', sans-serif;
-  background-color: var(--bg-deep);
-  color: var(--text-primary);
+  background-color: var(--bg-base);
+  color: var(--text-high);
   min-height: 100dvh;
   overflow-x: hidden;
+  
+  /* Vibrant Animated Background for Glassmorphism */
   background-image: 
-    radial-gradient(circle at 15% 50%, rgba(90, 50, 250, 0.15), transparent 40%),
-    radial-gradient(circle at 85% 30%, rgba(0, 242, 254, 0.1), transparent 40%);
+    radial-gradient(circle at 15% 50%, rgba(98, 0, 238, 0.25), transparent 45%),
+    radial-gradient(circle at 85% 30%, rgba(3, 218, 198, 0.2), transparent 45%),
+    radial-gradient(circle at 50% 80%, rgba(187, 134, 252, 0.15), transparent 45%);
+  background-attachment: fixed;
 }
 
 /* Typography */
 h1, h2, h3 {
   font-weight: 700;
   letter-spacing: -0.02em;
+  color: var(--text-high);
 }
+
+p, div {
+  color: var(--text-medium);
+}
+
+span {
+  color: inherit;
+}
+
+.text-high { color: var(--text-high) !important; }
+.text-medium { color: var(--text-medium) !important; }
+.text-accent { color: var(--accent) !important; }
+.text-cyan { color: var(--accent-cyan) !important; }
 
 /* Fluid Entrance Animations */
 @keyframes fadeUp {
   from {
     opacity: 0;
-    transform: translateY(4rem);
-    filter: blur(12px);
+    transform: translateY(2rem);
+    filter: blur(8px);
   }
   to {
     opacity: 1;
@@ -52,146 +80,135 @@ h1, h2, h3 {
 }
 
 .animate-fade-up {
-  opacity: 0; /* initial state before animation */
-  animation: fadeUp 1.2s var(--fluid-bezier) forwards;
+  opacity: 0;
+  animation: fadeUp 1s var(--fluid-bezier) forwards;
 }
 
 .delay-100 { animation-delay: 100ms; }
 .delay-200 { animation-delay: 200ms; }
+.delay-300 { animation-delay: 300ms; }
 
-/* The Double-Bezel Architecture (Doppelrand) */
-.outer-shell {
-  background: var(--bg-shell);
-  border: 1px solid var(--border-shell);
-  padding: 0.375rem; /* ~6px */
-  border-radius: 2rem;
+/* Glass Panel Architecture */
+.glass-panel {
+  background: var(--glass-bg);
   backdrop-filter: blur(24px);
-  box-shadow: 0 40px 80px rgba(0,0,0,0.5);
-  transition: transform var(--fluid-duration) var(--fluid-bezier);
-  perspective: 1000px;
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid var(--glass-border);
+  border-radius: 1.5rem;
+  padding: 2.5rem;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+  transition: transform var(--fluid-duration) var(--fluid-bezier), border-color 0.3s ease;
 }
 
-.outer-shell:hover {
-  /* Antigravity isometric pop on hover */
-  transform: translateY(-8px) rotateX(2deg) rotateY(-1deg);
+.glass-panel:hover {
+  border-color: var(--glass-border-light);
+  transform: translateY(-4px);
 }
 
-.inner-core {
-  background: var(--bg-core);
-  border: 1px solid var(--border-core);
-  border-radius: calc(2rem - 0.375rem);
-  padding: 3rem;
-  box-shadow: inset 0 1px 1px rgba(255,255,255,0.05);
-  height: 100%;
-}
-
-/* Button-in-Button Nested Architecture */
-.premium-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 1.5rem;
-  background: white;
-  color: black;
-  padding: 0.5rem 0.5rem 0.5rem 1.75rem;
-  border-radius: 9999px; /* fully rounded pill */
-  font-weight: 700;
-  font-size: 0.95rem;
-  border: none;
-  cursor: pointer;
-  transition: all 400ms var(--fluid-bezier);
-}
-
-/* Magnetic Hover Physics */
-.premium-btn:hover:not(:disabled) {
-  transform: scale(0.98);
-}
-
-.btn-icon-wrapper {
+/* Header Container */
+.header-container {
   display: flex;
-  align-items: center;
   justify-content: center;
-  width: 2.75rem;
-  height: 2.75rem;
-  background: rgba(0,0,0,0.05);
-  border-radius: 50%;
-  transition: all 400ms var(--fluid-bezier);
+  padding-top: 1.5rem;
+  margin-bottom: 3rem;
+  width: 100%;
 }
 
-.premium-btn:hover:not(:disabled) .btn-icon-wrapper {
-  transform: translateX(4px) translateY(-1px) scale(1.05); /* Diagonal translation */
-  background: rgba(0,0,0,0.1);
-}
-
-.premium-btn:disabled {
-  background: #333;
-  color: #888;
-  cursor: not-allowed;
-}
-
-/* Layout & Spatial Rhythm */
-.macro-pad {
-  padding-top: 8rem;
-  padding-bottom: 6rem;
-}
-
-/* The Fluid Island Navbar */
+/* Glass Navbar */
 .glass-nav {
-  position: fixed;
-  top: 1.5rem;
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(10, 10, 10, 0.4);
-  backdrop-filter: blur(16px);
-  border: 1px solid var(--border-shell);
+  background: rgba(18, 18, 18, 0.5);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid var(--glass-border);
   border-radius: 9999px;
   padding: 0.5rem 0.5rem 0.5rem 1.5rem;
   display: flex;
   align-items: center;
   gap: 2.5rem;
   z-index: 50;
-  box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
 }
 
-/* Premium Inputs */
+/* Premium Buttons */
+.premium-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--text-high);
+  color: var(--bg-base);
+  padding: 0.8rem 1.5rem;
+  border-radius: 9999px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  border: none;
+  cursor: pointer;
+  transition: transform 300ms var(--fluid-bezier), background 300ms ease;
+}
+
+.premium-btn:hover:not(:disabled) {
+  transform: scale(0.97);
+  background: white;
+}
+
+.premium-btn.accent {
+  background: var(--accent);
+  color: var(--on-accent);
+}
+.premium-btn.accent:hover:not(:disabled) {
+  background: #CBA4FD; /* slightly lighter */
+}
+
+.premium-btn:disabled {
+  background: var(--glass-bg);
+  color: var(--text-disabled);
+  border: 1px solid var(--glass-border);
+  cursor: not-allowed;
+}
+
+/* Inputs */
 .input-premium {
   width: 100%;
-  background: rgba(255,255,255,0.02);
-  border: 1px solid var(--border-shell);
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--glass-border);
   padding: 1rem 1.25rem;
   border-radius: 1rem;
-  color: white;
+  color: var(--text-high);
   font-family: inherit;
   font-size: 1rem;
-  transition: all 400ms var(--fluid-bezier);
+  transition: all 300ms ease;
+}
+
+.input-premium::placeholder {
+  color: var(--text-disabled);
 }
 
 .input-premium:focus {
   outline: none;
-  border-color: rgba(255,255,255,0.2);
-  background: rgba(255,255,255,0.05);
-  box-shadow: 0 0 20px rgba(255,255,255,0.05);
+  border-color: var(--accent);
+  background: rgba(187, 134, 252, 0.05);
+  box-shadow: 0 0 0 1px var(--accent);
 }
 
 .form-group {
   display: flex;
   flex-direction: column;
-  gap: 0.6rem;
+  gap: 0.5rem;
   margin-bottom: 1.5rem;
 }
 
-/* Microscopic Eyebrow Tags */
 .form-label {
   font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.15em;
-  color: var(--text-secondary);
+  color: var(--text-medium);
   font-weight: 700;
 }
 
+/* Eyebrow Tags */
 .eyebrow-tag {
   display: inline-block;
-  background: rgba(255,255,255,0.05);
-  padding: 0.3rem 0.8rem;
+  background: rgba(255, 255, 255, 0.08);
+  padding: 0.35rem 0.8rem;
   border-radius: 99px;
   font-size: 0.65rem;
   text-transform: uppercase;
@@ -199,6 +216,8 @@ h1, h2, h3 {
   margin-bottom: 1.5rem;
   width: fit-content;
   font-weight: 700;
+  color: var(--text-high);
+  border: 1px solid var(--glass-border);
 }
 
 /* Status Banner */
@@ -213,34 +232,90 @@ h1, h2, h3 {
 }
 
 .status-box.success {
-  background: rgba(46, 213, 115, 0.05);
-  border-color: rgba(46, 213, 115, 0.2);
-  color: #2ed573;
+  background: rgba(3, 218, 198, 0.1);
+  border-color: rgba(3, 218, 198, 0.3);
+  color: var(--accent-cyan);
 }
 
 .status-box.error {
-  background: rgba(255, 71, 87, 0.05);
-  border-color: rgba(255, 71, 87, 0.2);
-  color: #ff4757;
+  background: rgba(207, 102, 121, 0.1);
+  border-color: rgba(207, 102, 121, 0.3);
+  color: #CF6679;
 }
 
-/* Asymmetrical Bento Grid */
+.status-box.info {
+  background: rgba(187, 134, 252, 0.1);
+  border-color: rgba(187, 134, 252, 0.3);
+  color: var(--accent);
+}
+
+/* Tab Segmented Control */
+.tab-container {
+  display: flex;
+  gap: 0.5rem;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 0.4rem;
+  border-radius: 12px;
+  border: 1px solid var(--glass-border);
+  margin-bottom: 2rem;
+}
+
+.tab-btn {
+  flex: 1;
+  background: transparent;
+  color: var(--text-medium);
+  border: none;
+  padding: 0.7rem 1rem;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+}
+
+.tab-btn.active {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-high);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+/* Bento Grid Layout */
+.macro-pad {
+  padding-bottom: 6rem;
+}
+
 .bento-grid {
   display: grid;
-  grid-template-columns: 1fr 1.5fr;
-  gap: 2.5rem;
-  max-width: 1200px;
+  grid-template-columns: 1fr 1.3fr;
+  gap: 2rem;
+  max-width: 1100px;
   margin: 0 auto;
-  padding: 0 2rem;
+  padding: 0 1.5rem;
 }
 
-/* Mobile Overrides */
+/* Info Cards inside Glass */
+.info-card {
+  background: rgba(0,0,0,0.15);
+  border: 1px solid var(--glass-border);
+  padding: 1.2rem;
+  border-radius: 1rem;
+}
+
 @media (max-width: 900px) {
   .bento-grid {
     grid-template-columns: 1fr;
     padding: 0 1rem;
   }
   .macro-pad {
-    padding-top: 7rem; 
+    padding-top: 2rem; 
+  }
+  .glass-nav {
+    width: 95%;
+    justify-content: space-between;
+    padding: 0.5rem 1rem;
+    gap: 1rem;
+  }
+  .glass-panel {
+    padding: 1.5rem;
   }
 }
