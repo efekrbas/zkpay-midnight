@@ -5,6 +5,9 @@ import {
   deriveOwnerPublicKey,
   toHex,
 } from './midnight';
+import { deployContract, submitCallTx } from '@midnight-ntwrk/midnight-js-contracts';
+import { CompiledZkPayContract } from '../../../src/generated/index.js';
+import type { ContractAddress } from '@midnight-ntwrk/compact-runtime';
 
 export interface ZKPayState {
   totalPoolValue: bigint;
@@ -21,17 +24,16 @@ export async function deployZKPay(
   const ownerPk = await deriveOwnerPublicKey(ownerSecretKey);
   const ownerPkHex = toHex(ownerPk);
 
-  // Set owner private state
-  await session.providers.privateStateProvider.set('ZKPayPrivateState', {
-    ownerSecretKey,
-    initialPoolValue,
+  const deployed: any = await (deployContract as any)(session.providers, {
+    compiledContract: CompiledZkPayContract,
+    privateStateId: 'ZKPayPrivateState',
+    initialPrivateState: {
+      ownerSecretKey,
+    },
+    args: [initialPoolValue],
   });
 
-  // Simulated / testnet address generation for connected wallet session
-  const randomSuffix = toHex(crypto.getRandomValues(new Uint8Array(16)));
-  const contractAddress = `mn_addr_preprod_${randomSuffix}`;
-  await session.providers.privateStateProvider.setContractAddress(contractAddress);
-
+  const contractAddress = deployed.deployTxData.public.contractAddress;
   return { contractAddress, ownerPublicKeyHex: ownerPkHex };
 }
 
@@ -43,27 +45,23 @@ export async function registerPayeeCommitment(
   secretKey: string,
   ownerSecretKey: string,
 ): Promise<{ commitmentHex: string; txId: string }> {
-  // Validate owner authorization
-  const derivedOwnerPk = await deriveOwnerPublicKey(ownerSecretKey);
   const commitment = await computePayeeCommitment(payeeAddress, allocatedAmount, secretKey);
   const commitmentHex = toHex(commitment);
 
-  // Store in session private state
-  await session.providers.privateStateProvider.setContractAddress(contractAddress);
-  await session.providers.privateStateProvider.set('ZKPayPrivateState', {
-    ownerSecretKey,
+  const tx: any = await (submitCallTx as any)(session.providers, {
+    compiledContract: CompiledZkPayContract,
+    contractAddress: contractAddress as unknown as ContractAddress,
+    privateStateId: 'ZKPayPrivateState',
+    initialPrivateState: {
+      ownerSecretKey: new Uint8Array(Buffer.from(ownerSecretKey, 'hex')),
+    },
+    circuitId: 'add_payee',
+    args: [commitment],
   });
-
-  // Execute transaction via session provider
-  const tx = {
-    serialize: () => new TextEncoder().encode(`add_payee:${contractAddress}:${commitmentHex}`),
-  };
-  const balanced = await session.providers.walletProvider.balanceTx(tx as any);
-  const txId = await session.providers.midnightProvider.submitTx(balanced as any);
 
   return {
     commitmentHex,
-    txId: typeof txId === 'string' ? txId : toHex(derivedOwnerPk).slice(0, 32),
+    txId: typeof tx.txHash === 'string' ? tx.txHash : tx.txId || 'tx_add_payee',
   };
 }
 
@@ -72,12 +70,15 @@ export async function fundPayrollPool(
   contractAddress: string,
   amount: bigint,
 ): Promise<{ txId: string }> {
-  const tx = {
-    serialize: () => new TextEncoder().encode(`fund_payroll:${contractAddress}:${amount}`),
-  };
-  const balanced = await session.providers.walletProvider.balanceTx(tx as any);
-  const txId = await session.providers.midnightProvider.submitTx(balanced as any);
-  return { txId: typeof txId === 'string' ? txId : `tx_fund_${amount}` };
+  const tx: any = await (submitCallTx as any)(session.providers, {
+    compiledContract: CompiledZkPayContract,
+    contractAddress: contractAddress as unknown as ContractAddress,
+    privateStateId: 'ZKPayPrivateState',
+    circuitId: 'fund_payroll',
+    args: [amount],
+  });
+
+  return { txId: typeof tx.txHash === 'string' ? tx.txHash : tx.txId || 'tx_fund' };
 }
 
 export async function executeConfidentialClaim(
@@ -97,22 +98,20 @@ export async function executeConfidentialClaim(
   const nullifier = await deriveNullifier(secretKey);
   const nullifierHex = toHex(nullifier);
 
-  // Set witness private state in provider
-  await session.providers.privateStateProvider.setContractAddress(contractAddress);
-  await session.providers.privateStateProvider.set('ZKPayPrivateState', {
-    allocatedAmount,
+  const tx: any = await (submitCallTx as any)(session.providers, {
+    compiledContract: CompiledZkPayContract,
+    contractAddress: contractAddress as unknown as ContractAddress,
+    privateStateId: 'ZKPayPrivateState',
+    initialPrivateState: {
+      allocatedAmount,
+    },
+    circuitId: 'claim_payroll',
+    args: [payeeAddress, claimAmount, new Uint8Array(Buffer.from(secretKey, 'hex'))],
   });
-
-  // Submit claim call
-  const tx = {
-    serialize: () => new TextEncoder().encode(`claim_payroll:${contractAddress}:${nullifierHex}:${claimAmount}`),
-  };
-  const balanced = await session.providers.walletProvider.balanceTx(tx as any);
-  const txId = await session.providers.midnightProvider.submitTx(balanced as any);
 
   return {
     nullifierHex,
     commitmentHex,
-    txId: typeof txId === 'string' ? txId : `tx_claim_${nullifierHex.slice(0, 16)}`,
+    txId: typeof tx.txHash === 'string' ? tx.txHash : tx.txId || 'tx_claim',
   };
 }

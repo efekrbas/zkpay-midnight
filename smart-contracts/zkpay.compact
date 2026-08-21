@@ -43,7 +43,7 @@ pure circuit computeCommitment(payee_address: Bytes<32>, amount: Uint<64>, secre
 
 // Constructor: Initialize contract with an initial pool value and set authenticated owner
 constructor(initial_pool_value: Uint<64>) {
-    total_pool_value = initial_pool_value;
+    total_pool_value = disclose(initial_pool_value);
     owner = disclose(deriveKey(ownerKey()));
 }
 
@@ -81,7 +81,7 @@ export circuit claim_payroll(
 
     // 5. Prevent double-spending / replay attacks by verifying and inserting a domain-separated nullifier
     const nullifier = deriveNullifier(secret_key);
-    assert(!nullifiers.member(nullifier), "Already claimed");
+    assert(!nullifiers.member(disclose(nullifier)), "Already claimed");
     nullifiers.insert(disclose(nullifier), true);
 
     // 6. Decrement the public total_pool_value upon successful verification
