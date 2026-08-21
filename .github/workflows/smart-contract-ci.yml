@@ -47,5 +47,8 @@ jobs:
       - name: Build
         run: npm run build
         
+      - name: Start Midnight DevNet
+        run: docker compose up -d --wait
+        
       - name: Run Tests
         run: npm test
