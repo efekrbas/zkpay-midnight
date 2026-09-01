@@ -7,7 +7,7 @@ import {
   toHex,
 } from './midnight';
 import { deployContract, submitCallTx } from '@midnight-ntwrk/midnight-js-contracts';
-import { CompiledZkPayContract } from '../../../src/generated/index.js';
+import { CompiledZkPayContract } from '../../src/generated';
 import type { ContractAddress } from '@midnight-ntwrk/compact-runtime';
 
 export interface ZKPayState {

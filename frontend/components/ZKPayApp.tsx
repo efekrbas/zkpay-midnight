@@ -1,20 +1,21 @@
+'use client';
+
 import React, { useState, useEffect } from 'react';
-import './index.css';
 import {
   detectWallet,
   createConnectedSession,
   computePayeeCommitment,
   toHex,
-} from './lib/midnight';
-import type { ConnectedSession } from './lib/midnight';
+} from '@/lib/midnight';
+import type { ConnectedSession } from '@/lib/midnight';
 import {
   deployZKPay,
   registerPayeeCommitment,
   fundPayrollPool,
   executeConfidentialClaim,
-} from './lib/zkpay';
+} from '@/lib/zkpay';
 
-export function App() {
+export function ZKPayApp() {
   const [session, setSession] = useState<ConnectedSession | null>(null);
   const [walletAddress, setWalletAddress] = useState<string>('');
   const [isConnecting, setIsConnecting] = useState(false);
@@ -675,4 +676,4 @@ export function App() {
   );
 }
 
-export default App;
+export default ZKPayApp;

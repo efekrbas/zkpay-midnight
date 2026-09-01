@@ -204,6 +204,7 @@ export function createPatchedPublicDataProvider(queryUrl: string, subscriptionUr
 }
 
 export async function detectWallet(): Promise<any> {
+  if (typeof window === 'undefined') return null;
   const win = window as any;
   if (win.midnight) {
     if (win.midnight['1am']) return win.midnight['1am'];
