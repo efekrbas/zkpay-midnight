@@ -3,6 +3,7 @@ import {
   computePayeeCommitment,
   deriveNullifier,
   deriveOwnerPublicKey,
+  fromHex,
   toHex,
 } from './midnight';
 import { deployContract, submitCallTx } from '@midnight-ntwrk/midnight-js-contracts';
@@ -53,7 +54,7 @@ export async function registerPayeeCommitment(
     contractAddress: contractAddress as unknown as ContractAddress,
     privateStateId: 'ZKPayPrivateState',
     initialPrivateState: {
-      ownerSecretKey: new Uint8Array(Buffer.from(ownerSecretKey, 'hex')),
+      ownerSecretKey: fromHex(ownerSecretKey),
     },
     circuitId: 'add_payee',
     args: [commitment],
@@ -106,7 +107,7 @@ export async function executeConfidentialClaim(
       allocatedAmount,
     },
     circuitId: 'claim_payroll',
-    args: [payeeAddress, claimAmount, new Uint8Array(Buffer.from(secretKey, 'hex'))],
+    args: [payeeAddress, claimAmount, fromHex(secretKey)],
   });
 
   return {

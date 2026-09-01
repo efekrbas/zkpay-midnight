@@ -3,19 +3,13 @@ import { Contract, ledger, pureCircuits } from './contract/index.js';
 export { Contract, ledger, pureCircuits };
 export type { Ledger, ImpureCircuits, PureCircuits } from './contract/index.js';
 
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
-
-// In CJS or ESM, we need to locate the assets (keys, zkir) relative to this directory.
-let currentDir: string;
+// Safe resolution for both browser (empty path) and Node (directory)
+let currentDir = '';
 if (typeof __dirname !== 'undefined') {
   currentDir = __dirname;
-} else {
-  // ESM fallback
-  currentDir = path.dirname(fileURLToPath(import.meta.url));
 }
 
-export const zkConfigPath = path.resolve(currentDir);
+export const zkConfigPath = currentDir;
 
 export const CompiledZkPayContract = CompiledContract.make(
   'zkpay',
@@ -24,3 +18,4 @@ export const CompiledZkPayContract = CompiledContract.make(
   CompiledContract.withVacantWitnesses,
   CompiledContract.withCompiledFileAssets(zkConfigPath),
 );
+
